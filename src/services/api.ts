@@ -1,5 +1,6 @@
 // API Base URL from environment variable
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+// Remove trailing slash to prevent double slashes in URLs
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://agrismart-backend-35jd.onrender.com').replace(/\/$/, '');
 
 // TypeScript interfaces for API responses
 export interface SoilDetectionResponse {
