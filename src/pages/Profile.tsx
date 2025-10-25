@@ -3,6 +3,8 @@ import { User, Mail, Phone, MapPin, Save, Loader2, MessageCircle, Heart } from '
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://agrismart-backend-35jd.onrender.com').replace(/\/$/, '');
+
 const Profile = () => {
   const { t } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
@@ -35,7 +37,7 @@ const Profile = () => {
 
   const loadCommunityPosts = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/community-posts');
+      const response = await fetch(`${API_BASE_URL}/api/community-posts`);
       const data = await response.json();
       
       if (data.success && data.posts) {
@@ -49,7 +51,7 @@ const Profile = () => {
 
   const loadProfile = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/profile/${id}`);
+      const response = await fetch(`${API_BASE_URL}/api/profile/${id}`);
       const data = await response.json();
       
       if (data.success && data.profile) {
@@ -64,7 +66,7 @@ const Profile = () => {
     setLoading(true);
     
     try {
-      const response = await fetch('http://localhost:8000/api/profile/save', {
+      const response = await fetch(`${API_BASE_URL}/api/profile/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profile)

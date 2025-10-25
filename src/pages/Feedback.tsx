@@ -4,6 +4,8 @@ import { api } from '../services/api';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://agrismart-backend-35jd.onrender.com').replace(/\/$/, '');
+
 const Feedback = () => {
   const { t } = useLanguage();
   const [rating, setRating] = useState(0);
@@ -26,7 +28,7 @@ const Feedback = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/feedback', {
+      const response = await fetch(`${API_BASE_URL}/api/feedback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -62,7 +64,7 @@ const Feedback = () => {
       setTimeout(() => setSubmitted(false), 3000);
     } catch (error: any) {
       console.error('Failed to submit feedback:', error);
-      toast.error('Failed to submit feedback. Please try again.');
+      toast.error('❌ Failed to submit feedback. Please try again later.');
     } finally {
       setIsSubmitting(false);
     }
