@@ -4,6 +4,8 @@ import { api, CommunityPost } from '../services/api';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://agrismart-backend-35jd.onrender.com').replace(/\/$/, '');
+
 interface Post {
   id: string | number;
   author: string;
@@ -38,7 +40,7 @@ const Community = () => {
   const fetchPosts = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/community-posts');
+      const response = await fetch(`${API_BASE_URL}/api/community-posts`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -95,7 +97,7 @@ const Community = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/community-post', {
+      const response = await fetch(`${API_BASE_URL}/api/community-post`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
