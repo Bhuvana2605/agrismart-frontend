@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Mail, Phone, MapPin, Save, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Save, Loader2, MessageCircle, Heart } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
@@ -18,6 +18,7 @@ const Profile = () => {
     farm_type: '',
     preferred_language: 'en'
   });
+  const [communityPosts, setCommunityPosts] = useState<any[]>([]);
 
   // Generate or get user ID
   useEffect(() => {
@@ -29,7 +30,22 @@ const Profile = () => {
     setUserId(id);
     setProfile(prev => ({ ...prev, user_id: id }));
     loadProfile(id);
+    loadCommunityPosts();
   }, []);
+
+  const loadCommunityPosts = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/community-posts');
+      const data = await response.json();
+      
+      if (data.success && data.posts) {
+        // Get only the 3 most recent posts
+        setCommunityPosts(data.posts.slice(0, 3));
+      }
+    } catch (error) {
+      console.error('Failed to load community posts:', error);
+    }
+  };
 
   const loadProfile = async (id: string) => {
     try {
@@ -170,7 +186,7 @@ const Profile = () => {
         </div>
 
         {/* Farm Details Section */}
-        <div className="glass rounded-3xl p-8">
+        <div className="glass rounded-3xl p-8 mb-8">
           <h2 className="mb-6">Farm Details</h2>
 
           <div className="space-y-6">
@@ -202,6 +218,64 @@ const Profile = () => {
               </select>
             </div>
           </div>
+        </div>
+
+        {/* Recent Community Posts Section */}
+        <div className="glass rounded-3xl p-8">
+          <h2 className="mb-6">Recent Community Posts 🌻</h2>
+          
+          {communityPosts.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">No community posts yet</p>
+          ) : (
+            <div className="space-y-4">
+              {communityPosts.map((post) => (
+                <div key={post.id} className={`p-4 rounded-xl border ${
+                  post.type === 'feedback' ? 'bg-blue-50 border-blue-200' : 'bg-background border-border'
+                }`}>
+                  <div className="flex items-start gap-3 mb-2">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-semibold text-primary text-sm">
+                      {post.author.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-sm">{post.author}</p>
+                        {post.type === 'feedback' && (
+                          <span className="px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full">
+                            💬 Feedback
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {post.timestamp ? new Date(post.timestamp).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric' 
+                        }) : 'Recently'}
+                      </p>
+                    </div>
+                  </div>
+                  <h3 className="font-semibold text-sm mb-1">{post.title}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{post.content}</p>
+                  
+                  {post.type === 'feedback' && post.rating > 0 && (
+                    <div className="mt-2">
+                      <span className="text-xs">{'⭐'.repeat(post.rating)}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Heart className="w-3 h-3" />
+                      <span>{post.likes || 0}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MessageCircle className="w-3 h-3" />
+                      <span>{post.comments || 0}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

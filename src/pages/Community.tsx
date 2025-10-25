@@ -39,27 +39,52 @@ const Community = () => {
     setIsLoading(true);
     try {
       const response = await fetch('http://localhost:8000/api/community-posts');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       
-      if (data.success) {
+      if (data.success && data.posts) {
         // Transform API data to match UI format
-        const transformedPosts: Post[] = data.posts.map((post: any) => ({
-          id: post.id || Math.random().toString(),
-          author: post.author,
-          date: post.timestamp ? new Date(post.timestamp).toLocaleDateString() : 'Recently',
-          title: post.title,
-          content: post.content,
-          preview: post.content.substring(0, 100) + '...',
-          likes: post.likes || 0,
-          comments: post.comments || 0,
-          type: post.type || 'post',
-          rating: post.rating || 0,
-        }));
+        const transformedPosts: Post[] = data.posts.map((post: any) => {
+          // Format date properly
+          let formattedDate = 'Recently';
+          if (post.timestamp) {
+            try {
+              const date = new Date(post.timestamp);
+              formattedDate = date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+              });
+            } catch (e) {
+              formattedDate = 'Recently';
+            }
+          }
+          
+          return {
+            id: post.id || Math.random().toString(),
+            author: post.author,
+            date: formattedDate,
+            title: post.title,
+            content: post.content,
+            preview: post.content.length > 150 ? post.content.substring(0, 150) + '...' : post.content,
+            likes: post.likes || 0,
+            comments: post.comments || 0,
+            type: post.type || 'post',
+            rating: post.rating || 0,
+          };
+        });
         setPosts(transformedPosts);
+      } else {
+        setPosts([]);
       }
     } catch (error: any) {
       console.error('Failed to fetch posts:', error);
-      toast.error('Failed to load community posts');
+      toast.error('Failed to load community posts. Please check if the backend is running.');
+      setPosts([]);
     } finally {
       setIsLoading(false);
     }
@@ -80,19 +105,25 @@ const Community = () => {
         })
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
 
       if (data.success) {
-        toast.success('Your story has been shared successfully!');
+        toast.success('✅ Your story has been shared successfully!');
         setShowModal(false);
         setFormData({ author: '', title: '', content: '' });
         
-        // Refresh posts
+        // Refresh posts to show the new one
         await fetchPosts();
+      } else {
+        toast.error('Failed to share your story. Please try again.');
       }
     } catch (error: any) {
       console.error('Failed to submit post:', error);
-      toast.error('Failed to share your story. Please try again.');
+      toast.error('❌ Failed to share your story. Please check if the backend is running.');
     } finally {
       setIsSubmitting(false);
     }
